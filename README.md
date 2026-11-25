@@ -106,9 +106,9 @@ Typically, a routine without any condition will appear in every possible state
 of the inputs. This makes it so the same routine will run no matter the state of
 any signal. However, if you want one part of the routine to run depending on the
 state of a input, you can use a condition. Conditions are formatted as
-`if [!]<signal> [(and | or) [!]<signal>...] {`. This does however mean that if
-these signals are used in the if-block, they will be replaced by the compiler
-and you will get a warning. An example if-block is shown below
+`if <boolean expresssion> {`. This does however mean that if these signals are
+used in the if-block, they will be replaced by the compiler and you will get a
+warning. An example if-block is shown below
 
 ```
 if interupt {
@@ -125,16 +125,34 @@ where the signal is set, however this does mean it is pointless to reference the
 signal in other blocks if the condition is only an input. The absolute
 conditions are formatted the same.
 
-#### Sub Routine
+#### Macros
 
 If there is a repreated set of instructions that is run, it can be wrapped in a
-macro. The macros are defined aboove where they are used in the routines block.
-The syntax is simply `macro <name> {`, and then a block of instructions. To 
-reference a macro, prefix the macro's name with `$`.
+macro. The macros are defined aboove where they are used in the `macros` block.
+The syntax is simply `<macro name>|(<params>...)| {`, and then a block of
+instructions. The parameters are replaced literally by the arguments provided to
+the macro's invokation. To reference a macro, prefix the macro's name with `$`.
+You can also run `if` statements off of these by starting with `$if <boolean>`
+and ending with `$endif`. As with most kinds of macros, the parameters directly
+replace signals. Macro `if` statements cannot be used with signals, only with
+direct boolean values.
 
 #### A Full Example
 
 ```
+macros {
+    load_pc(pc_sel_arg) {
+        mem_oe:on pc_we:on pc_sel:$pc_sel_arg:
+        mem_oe:on pc_we:off ir_we:on;
+
+        $if pc_sel_arg
+
+        mem_oe:off;
+
+        $endif
+    }
+}
+
 config {
     address_len = 1;
     output_width = 1;
@@ -146,18 +164,15 @@ config {
 }
 
 routines {                              // The main block for writing logic
-    macro load_pc {
-        mem_oe:on pc_we:on pc_sel:0:
-        mem_oe:on pc_we:off ir_we:on;
-    }
-    op 000 {                            // The code placed for an operator along with the index
-        $load_pc
-        reg_sel1:0 accum_we
+
+    op 000 {                            
+        $load_pc(0)
+        reg_sel1:0 accum_we;
     }
 
     if interupt {
-        mem_oe:on pc_we:on pc_sel:1
-        mem_oe:on pc_we:off ir_we:on;
+        $load_pc(1)
+        reg_sel1:0 accum_we;
     }
 }
 ```

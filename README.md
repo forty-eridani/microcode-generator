@@ -26,6 +26,9 @@ specific definitions of those terms:
   function and syntax of code in the block depends on the type of block.
 - Instruction: A command which sets the signals to the state necessary for the
   function of the routine.
+- Expression: A result of inputs and unary operations to those inputs
+- Boolean: Either `on`/`1`, or `off`/`0`. These are the only values you can use
+  for parameters of macros that are in `$if` statements.
 
 ### Parsing Info
 
@@ -68,7 +71,7 @@ config {
     output_width = 1;
     op_len = 3;
     inputs = interupt:3;
-    signals = pc_we:0 reg_we:1 reg_sel:2 reg_sel2:3 
+    signals = pc_we:0 reg_we:1 reg_sel:2 reg_sel2:3
               mem_we:4 mem_oe:5 ir_we:6 pc_sel:7;
     iter_len = 3;
 }
@@ -112,8 +115,8 @@ warning. An example if-block is shown below
 
 ```
 if interupt {
-    mem_oe:on pc_we:off pc_sel:0
-    mem_oe:on pc_we:off pc_sel:1
+    mem_oe:on pc_we:off pc_sel:0;
+    mem_oe:on pc_we:off pc_sel:1;
 }
 ```
 
@@ -163,9 +166,9 @@ config {
     iter_len = 3;
 }
 
-routines {                              // The main block for writing logic
+routines {
 
-    op 000 {                            
+    op 000 {
         $load_pc(0)
         reg_sel1:0 accum_we;
     }
